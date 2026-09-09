@@ -8,6 +8,7 @@ async def init_db() -> None:
         modules={
             "models": ["backend.database.models"],
         },
+        _enable_global_fallback=True,
     )
 
 async def close_db() -> None:

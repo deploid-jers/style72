@@ -1,3 +1,7 @@
+import sys
+from backend.core.paths import BASE_DIR
+sys.path.insert(0, str(BASE_DIR / "vendor"))
+
 import webbrowser
 import uvicorn
 import time
