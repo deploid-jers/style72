@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 
@@ -59,6 +61,18 @@ class SpecialistSchedule(models.Model):
                 name="unique_specialist_work_date",
             ),
         ]
+
+    def clean(self):
+        if self.start_time and self.end_time:
+            if self.start_time >= self.end_time:
+                raise ValidationError(
+                    "Время начала должно быть раньше времени окончания."
+                )
+
+        if self.work_date and self.work_date < timezone.localdate():
+            raise ValidationError(
+                "Нельзя создать расписание на прошедшую дату."
+            )
 
     def __str__(self):
         return f"{self.specialist} — {self.work_date}"

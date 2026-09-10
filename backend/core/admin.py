@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django import forms
+from django.utils.html import format_html
+from datetime import datetime, timedelta
 
 from .models import (
     Category,
@@ -9,8 +12,237 @@ from .models import (
 )
 
 
-admin.site.register(Category)
-admin.site.register(Service)
-admin.site.register(Specialist)
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name", "description")
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "category",
+        "price",
+        "duration_minutes",
+        "is_active",
+    )
+    list_filter = ("category", "is_active",)
+    search_fields = ("name", "description")
+
+
+
+class SpecialistScheduleInline(admin.TabularInline):
+    model = SpecialistSchedule
+    extra = 1
+
+@admin.register(Specialist)
+class SpecialistAdmin(admin.ModelAdmin):
+    list_display = (
+        "full_name",
+        "specialization",
+        "is_active",
+    )
+    list_filter = ("specialization", "is_active")
+    search_fields = ("full_name", "specialization", "bio")
+    inlines = [SpecialistScheduleInline]
+
+
+
+
 admin.site.register(SpecialistSchedule)
-admin.site.register(Appointment)
+
+
+
+
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        appointment_type = cleaned_data.get("type")
+
+        if appointment_type == Appointment.AppointmentType.ONLINE_BOOKING:
+            required_fields = {
+                "specialist": "Специалист",
+                "service": "Услуга",
+                "appointment_date": "Дата записи",
+                "appointment_time": "Время записи",
+            }
+
+            for field, label in required_fields.items():
+                if not cleaned_data.get(field):
+                    self.add_error(field, f"{label} обязательна для онлайн-записи.")
+
+            specialist = cleaned_data.get("specialist")
+            service = cleaned_data.get("service")
+            appointment_date = cleaned_data.get("appointment_date")
+            appointment_time = cleaned_data.get("appointment_time")
+
+            if specialist and service and appointment_date and appointment_time:
+                start = datetime.combine(
+                    appointment_date,
+                    appointment_time,
+                )
+
+                end = start + timedelta(
+                    minutes=service.duration_minutes
+                )
+
+                schedule = SpecialistSchedule.objects.filter(
+                    specialist=specialist,
+                    work_date=appointment_date,
+                ).first()
+
+
+                if not schedule:
+                    self.add_error(
+                        "appointment_date",
+                        "У специалиста нет рабочего расписания на эту дату.",
+                    )
+                elif start.time() < schedule.start_time or end.time() > schedule.end_time:
+                    self.add_error(
+                        "appointment_time",
+                        "Запись не попадает в рабочее время специалиста.",
+                    )
+
+                existing_appointments = Appointment.objects.filter(
+                    specialist=specialist,
+                    appointment_date=appointment_date,
+                    status__in=[
+                        Appointment.Status.NEW,
+                        Appointment.Status.CONFIRMED,
+                    ],
+                ).exclude(pk=self.instance.pk)
+
+                for appointment in existing_appointments:
+                    existing_start = datetime.combine(
+                        appointment.appointment_date,
+                        appointment.appointment_time,
+                    )
+
+                    existing_end = existing_start + timedelta(
+                        minutes=appointment.service.duration_minutes
+                    )
+
+                    if start < existing_end and end > existing_start:
+                        self.add_error(
+                            "appointment_time",
+                            "Специалист уже занят в это время.",
+                        )
+                        break
+
+
+        if appointment_type == Appointment.AppointmentType.CALLBACK:
+            cleaned_data["specialist"] = None
+            cleaned_data["service"] = None
+            cleaned_data["appointment_date"] = None
+            cleaned_data["appointment_time"] = None
+
+        return cleaned_data
+
+
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+
+    list_display = (
+        "client_name",
+        "client_phone",
+        "type",
+        "service",
+        "specialist",
+        "appointment_date",
+        "appointment_time",
+        "status",
+        "created_at",
+    )
+    list_filter = (
+        "status",
+        "type",
+        "appointment_date",
+        "specialist",
+        "service",
+    )
+    search_fields = (
+        "client_name",
+        "client_phone",
+    )
+    ordering = ("-created_at",)
+
+    autocomplete_fields = (
+            "specialist",
+            "service",
+        )
+
+    list_editable = ("status",)
+
+    fieldsets = (
+        (
+            "Клиент",
+            {
+                "fields": (
+                    "client_name",
+                    "client_phone",
+                    "client_comment",
+                )
+            },
+        ),
+        (
+            "Заявка",
+            {
+                "fields": (
+                    "type",
+                    "status",
+                )
+            },
+        ),
+        (
+            "Онлайн-запись",
+            {
+                "fields": (
+                    "specialist",
+                    "service",
+                    "appointment_date",
+                    "appointment_time",
+                )
+            },
+        ),
+        (
+            "Система",
+            {
+                "fields": (
+                    "created_at",
+                )
+            },
+        ),
+    )
+
+    class Media:
+        js = ("core/js/appointment_form.js",) 
+
+    def get_form(self, request, obj=None, **kwargs):
+        kwargs["form"] = AppointmentForm
+        return super().get_form(request, obj, **kwargs)
+
+
+    # @admin.display(description="Статус")
+    # def colored_status(self, obj):
+    #     colors = {
+    #         "new": "#ffc107",
+    #         "confirmed": "#198754",
+    #         "completed": "#0d6efd",
+    #         "cancelled": "#dc3545",
+    #     }
+
+    #     color = colors.get(obj.status, "#6c757d")
+
+    #     return format_html(
+    #         '<strong style="color: {};">{}</strong>',
+    #         color,
+    #         obj.get_status_display(),
+    #     )
