@@ -1,12 +1,2 @@
 # python 3.12.5
-fastapi
-uvicorn
-jinja2
-requests
-tortoise-orm[aiosqlite]
-fastapi-admin
-redis
-packaging
-setuptools
-
-# PYTHONPATH=vendor python -c "from fastapi_admin.app import app; print(app)"
+django
