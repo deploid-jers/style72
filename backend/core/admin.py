@@ -1,11 +1,16 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import display
+from unfold.contrib.filters.admin import RangeDateFilter
 from django import forms
-from django.utils.html import format_html
 from datetime import datetime, timedelta
+from django.forms import widgets
+from django.db import models
 
 from .models import (
     Category,
     Service,
+    Specialization,
     Specialist,
     SpecialistSchedule,
     Appointment,
@@ -13,14 +18,14 @@ from .models import (
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ("name", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "description")
 
 
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(ModelAdmin):
     list_display = (
         "name",
         "category",
@@ -32,13 +37,35 @@ class ServiceAdmin(admin.ModelAdmin):
     search_fields = ("name", "description")
 
 
+@admin.register(Specialization)
+class SpecializationAdmin(ModelAdmin):
+    list_display = (
+        "name",
+    )
+    list_filter = (
+        "name",
+    )
+    search_fields = ("name", "")
 
-class SpecialistScheduleInline(admin.TabularInline):
+
+class SpecialistScheduleInline(TabularInline):
     model = SpecialistSchedule
+    compressed_fields = True
     extra = 1
 
+    class Media:
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            )
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            'core/js/timepicker.js', # Ваш скрипт
+        )
+
 @admin.register(Specialist)
-class SpecialistAdmin(admin.ModelAdmin):
+class SpecialistAdmin(ModelAdmin):
     list_display = (
         "full_name",
         "specialization",
@@ -47,19 +74,52 @@ class SpecialistAdmin(admin.ModelAdmin):
     list_filter = ("specialization", "is_active")
     search_fields = ("full_name", "specialization", "bio")
     inlines = [SpecialistScheduleInline]
+    filter_horizontal = ('services',)
+
+    class Media:
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            )
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            'core/js/timepicker.js', # Ваш скрипт
+        )
 
 
+@admin.register(SpecialistSchedule)
+class SpecialistScheduleAdmin(ModelAdmin):
+    list_display = (
+        "specialist",
+        "work_date",
+        "start_time",
+        "end_time",
+    )
+    list_filter = ( 
+        "specialist",
+        ("work_date", RangeDateFilter),
+        )
+    search_fields = ("specialist",)
 
-
-admin.site.register(SpecialistSchedule)
-
-
+    class Media:
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            )
+        }
+        js = (
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            'core/js/timepicker.js', # Ваш скрипт
+        )
 
 
 class AppointmentForm(forms.ModelForm):
+
     class Meta:
         model = Appointment
         fields = "__all__"
+
 
     def clean(self):
         cleaned_data = super().clean()
@@ -147,7 +207,7 @@ class AppointmentForm(forms.ModelForm):
 
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(ModelAdmin):
     readonly_fields = ("created_at",)
 
     list_display = (
@@ -164,7 +224,7 @@ class AppointmentAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "type",
-        "appointment_date",
+        ("appointment_date", RangeDateFilter),
         "specialist",
         "service",
     )
@@ -221,8 +281,17 @@ class AppointmentAdmin(admin.ModelAdmin):
         ),
     )
 
+
+
     class Media:
-        js = ("core/js/appointment_form.js",) 
+        js = ("core/js/appointment_form.js",'https://cdn.jsdelivr.net/npm/flatpickr', 'core/js/timepicker.js', "core/js/status_color.js") 
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+                "core/css/status_colors.css",
+            )
+        }
+
 
     def get_form(self, request, obj=None, **kwargs):
         kwargs["form"] = AppointmentForm
@@ -245,3 +314,17 @@ class AppointmentAdmin(admin.ModelAdmin):
     #         color,
     #         obj.get_status_display(),
     #     )
+
+
+    # formfield_overrides = {
+    #     # Заменяем стандартный виджет времени на нативный HTML5 timepicker
+    #     models.TimeField: {
+    #         'widget': widgets.TimeInput(
+    #             attrs={
+    #                 'type': 'time',
+    #                 'step': '900',  # Шаг в секундах (900 сек = 15 минут, т.е. 10:00, 10:15, 10:30)
+    #                 'class': 'vTimeField',
+    #             }
+    #         )
+    #     },
+    # }

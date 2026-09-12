@@ -1,0 +1,27 @@
+/* Цвет рамки и текста для выпадающего списка статусов */
+select[name$="-status"] {
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+/* Раскрашиваем варианты (option) внутри списка */
+select[name$="-status"] option[value="NEW"] {
+    background-color: #1e3a8a;
+    color: #93c5fd;
+}
+
+select[name$="-status"] option[value="CONFIRMED"] {
+    background-color: #064e3b;
+    color: #6ee7b7;
+}
+
+select[name$="-status"] option[value="CANCELLED"] {
+    background-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+select[name$="-status"] option[value="COMPLETED"] {
+    background-color: #78350f;
+    color: #fde047;
+}
