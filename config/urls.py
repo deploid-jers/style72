@@ -17,6 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from backend.core.views import *
+
 urlpatterns = [
+    path("admin/api/specialists/<int:specialist_id>/services/", specialist_services,),
     path('admin/', admin.site.urls),
+    path("", home_view, name="home"),
+    path("about/", about_view, name="about"),
+    path("services/", services_view, name="services"),
+    path("team/", team_view, name="team"),
+    path("prices/", prices_view, name="prices"),
+    path("contacts/", contacts_view, name="contacts"),    
+    path("booking/", booking_view, name="booking"),
 ]
+

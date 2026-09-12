@@ -1,39 +1,7 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Цены - Estetica Lab</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    
-    <!-- Шапка сайта -->
-    <header class="header" id="header">
-        <div class="container header-inner">
-            <div class="logo">
-                <a href="index.html">Estetica Lab</a>
-            </div>
-            <nav class="nav" id="nav">
-                <ul class="nav-list">
-                    <li><a href="about.html">О нас</a></li>
-                    <li><a href="services.html">Услуги</a></li>
-                    <li><a href="team.html">Команда</a></li>
-                    <li><a href="prices.html">Цены</a></li>
-                    <li><a href="contacts.html">Контакты</a></li>
-                </ul>
-            </nav>
-            <div class="header-actions">
-                <a href="tel:+73452564202" class="phone">+7 (3452) 564-202</a>
-                <a href="booking.html" class="btn btn-primary">Онлайн-запись</a>
-            </div>
-            <button class="burger" id="burger">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-    </header>
+{% extends 'base.html' %}
+{% block title %}Цены - Estetica Lab{% endblock %}
 
+{% block content %}
 
     <div class="page-header">
         <div class="container">
@@ -85,22 +53,4 @@
         </div>
     </section>
 
-    
-    <!-- Подвал (Footer) -->
-    <footer class="footer">
-        <div class="container footer-inner">
-            <div class="footer-col">
-                <h3>Estetica Lab</h3>
-                <p>г. Тюмень, ул. Орджоникидзе, 4</p>
-                <p>Ежедневно с 09:00 до 20:00</p>
-            </div>
-            <div class="footer-col">
-                <p><strong>Телефон:</strong> <br> +7 (3452) 564-202</p>
-                <p><strong>E-mail:</strong> <br> info@estlab72.ru</p>
-            </div>
-        </div>
-    </footer>
-    <script src="script.js"></script>
-
-</body>
-</html>
+{% endblock %}

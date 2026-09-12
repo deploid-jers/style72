@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Главная - Estetica Lab{% endblock %}
+
+{% block content %} 
+
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>Красота и медицина.<br>Вместе.</h1>
+            <p>Создаем новое измерение ухода за собой, объединив красоту и науку. Современные аппаратные методики и профессиональная команда в Тюмени.</p>
+            <a href="{% url 'booking' %}" class="btn btn-primary btn-large">Онлайн-запись</a>
+        </div>
+    </section>
+
+    <section class="services">
+        <div class="container">
+            <h2 class="section-title">Популярные услуги</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>Аппаратная косметология</h3>
+                    <p>Лечение купероза, микротоковая терапия, лазерная эпиляция, массаж ICOONE.</p>
+                    <a href="{% url 'services' %}" class="more-link">Все услуги &rarr;</a>
+                </div>
+                <div class="service-card">
+                    <h3>Инъекционная косметология</h3>
+                    <p>Биоревитализация, ботулинотерапия, контурная пластика, нитевой лифтинг.</p>
+                    <a href="{% url 'services' %}" class="more-link">Все услуги &rarr;</a>
+                </div>
+                <div class="service-card">
+                    <h3>Эстетическая косметология</h3>
+                    <p>Пилинги, уходы, чистки лица и криомассаж.</p>
+                    <a href="{% url 'services' %}" class="more-link">Все услуги &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

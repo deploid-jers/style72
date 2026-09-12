@@ -64,7 +64,7 @@ class AppointmentForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        appointment_type = cleaned_data.get("type")
+        appointment_type = cleaned_data.get("type") 
 
         if appointment_type == Appointment.AppointmentType.ONLINE_BOOKING:
             required_fields = {
@@ -176,7 +176,6 @@ class AppointmentAdmin(admin.ModelAdmin):
 
     autocomplete_fields = (
             "specialist",
-            "service",
         )
 
     list_editable = ("status",)
