@@ -1,13 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 
-# Остановка скрипта при первой же ошибке
 set -e
+
+mkdir -p /app/sqlite_db /app/media /app/staticfiles
 
 echo "==> Применение миграций БД..."
 python manage.py migrate --noinput
 
-echo "==> Сбор статики (для Tailwind / Unfold)..."
-python manage.py collectstatic --noinput
+echo "==> Сбор статики (для Unfold)..."
+python manage.py collectstatic --noinput --clear
 
 echo "==> Создание суперпользователя (если его нет)..."
 python manage.py shell <<EOF
@@ -26,5 +27,4 @@ else:
     print(f"Суперпользователь '{username}' уже существует.")
 EOF
 
-# Запуск основного процесса (Gunicorn или Uvicorn)
 exec "$@"

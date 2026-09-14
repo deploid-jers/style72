@@ -1,3 +1,4 @@
 # python 3.12.5
 django
 django-unfold
+uvicorn

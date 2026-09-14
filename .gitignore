@@ -5,4 +5,3 @@ __pycache__/
 temp.*
 .vscode/
 
-{{ url_for('static', path='css/style.css') }}
